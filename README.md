@@ -1,4 +1,4 @@
 perlfunc
 ========
 
-Pyton module for calling perl functions from python
+Python module for calling perl functions from python
