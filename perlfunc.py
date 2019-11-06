@@ -48,9 +48,9 @@ def sys_exec(cmd, shell=True, env=None):
     a = Popen(cmd, shell=shell, stdout=PIPE, stderr=PIPE, env=env)
     a.wait()          # Wait process to terminate
     if a.returncode:  # Not 0 => Error
-        raise a.communicate()[1]
+        raise BaseException(str(a.communicate()[1]))
 
-    return a.communicate()[0]
+    return str(a.communicate()[0])
 
 
 # Perl path
@@ -118,12 +118,11 @@ def perlargs(*args):
 # Decorator which allows to call a perl function from python
 def perlfunc(fn):
     def new(*args):
-        # 
-        tmppipe, pipename = tempfile.mkstemp('.pipe', 'tmp_', '/tmp', True)
+        tmppipe, pipename = tempfile.mkstemp('.pipe', 'tmp_', '/tmp', text=True)
         os.close(tmppipe)
 
-        tmpfile, tmpname = tempfile.mkstemp('.pl', 'tmp_', '/tmp', True)
-        os.write(tmpfile, fn.func_doc)  # Writes the perl code
+        tmpfile, tmpname = tempfile.mkstemp('.pl', 'tmp_', '/tmp', text=True)
+        os.write(tmpfile, fn.__doc__)  # Writes the perl code
         os.write(tmpfile, r'''
         {
             my @rst;
@@ -133,7 +132,7 @@ def perlfunc(fn):
             open(DAT, ">''' + pipename + '''") || die("Cannot Open File for communication");
     
             @rst = (%s%s);
-            if (defined(@rst)) {
+            if (@rst) {
                 $len = @rst;
             } else {
                 $len = 0;
@@ -172,7 +171,8 @@ def perlfunc(fn):
 
         # Eval perl code
         result_stdout = sys_exec([PERL] + [tmpname], False, env=env)
-        print('STDOUT:', result_stdout)
+        if DEBUG:
+            print('STDOUT: ' + result_stdout)
         with open(pipename, 'rt') as pipe:
             result_str = pipe.read()
 
@@ -197,13 +197,11 @@ def perlreq(*modules):
         def new(*args):
             return fn(*args)
 
-        new.func_name = fn.func_name
-        new.func_doc = fn.func_doc
-        if new.func_doc is None:
-            new.func_doc = ''
+        new.__name__ = fn.__name__
+        new.__doc__ = fn.__doc__ if fn.__doc__ is not None else ''
 
         for i in modules:
-            new.func_doc = 'require(\'%s\');\n' % i + new.func_doc
+            new.__doc__ = 'require(\'%s\');\n' % i + new.__doc__
         return new
 
     return require_inc
