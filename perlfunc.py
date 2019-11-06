@@ -50,7 +50,7 @@ def sys_exec(cmd, shell=True, env=None):
     if a.returncode:  # Not 0 => Error
         raise BaseException(str(a.communicate()[1]))
 
-    return str(a.communicate()[0])
+    return a.communicate()[0].decode('utf-8')
 
 
 # Perl path
@@ -122,8 +122,8 @@ def perlfunc(fn):
         os.close(tmppipe)
 
         tmpfile, tmpname = tempfile.mkstemp('.pl', 'tmp_', '/tmp', text=True)
-        os.write(tmpfile, fn.__doc__)  # Writes the perl code
-        os.write(tmpfile, r'''
+        os.write(tmpfile, fn.__doc__.encode('utf-8'))  # Writes the perl code
+        os.write(tmpfile, (r'''
         {
             my @rst;
             my $len;
@@ -159,12 +159,12 @@ def perlfunc(fn):
             close(DAT);
         }
 
-        ''' % (fn.func_name, perlargs(*args)))
+        ''' % (fn.__name__, perlargs(*args))).encode('utf-8'))
         os.close(tmpfile)
 
         try:
             env = os.environ                            # Get OS environment vars
-            env['PERL5LIB'] = __PERL5LIB[fn.func_name]  # Adds our PERL5LIB if defined
+            env['PERL5LIB'] = __PERL5LIB[fn.__name__]  # Adds our PERL5LIB if defined
         except KeyError:
             env = os.environ
             env['PERL5LIB'] = __DEFAULT_PERL5LIB
@@ -215,15 +215,15 @@ def perl5lib(*paths):
         def new(*args):
             return fn(*args)
 
-        new.func_name = fn.func_name
-        new.func_doc = fn.func_doc
+        new.__name__ = fn.__name__
+        new.__doc__ = fn.__doc__
 
         try:
-            PATH = __PERL5LIB[fn.func_name] + ':'
+            PATH = __PERL5LIB[fn.__name__] + ':'
         except KeyError:  # Not defined in __PERL5LIB yet
             PATH = ''
 
-        __PERL5LIB[fn.func_name] = PATH + ':'.join(paths)
+        __PERL5LIB[fn.__name__] = PATH + ':'.join(paths)
         return new
 
     return include_fun    
