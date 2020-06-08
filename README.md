@@ -6,7 +6,7 @@ and it will invoke your perl function and return the
 results.
 
 Read more at:
-http://www.boriel.com/2007/01/21/calling-perl-from-python
+https://www.boriel.com/calling-perl-from-python.html
 
 ## Sample usage
 
