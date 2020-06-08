@@ -11,7 +11,7 @@ https://www.boriel.com/calling-perl-from-python.html
 ## Sample usage
 
 First create a small Perl script named `mymodule.pl`:
-```
+```perl
 sub myfunc
 {
     my ($a, $b) = @_;
@@ -24,11 +24,11 @@ sub myfunc
 Now let's create a Python program that will invoke
 the function `myfunc()` in the module `mymodule.pl`:
 
-```
+```python
 from perlfunc import perl5lib, perlfunc, perlreq
 
 @perlfunc
-@perlreq('myfunc.pl')
+@perlreq('mymodule.pl')
 def myfunc(a, b):
     pass  # Empty body
 
