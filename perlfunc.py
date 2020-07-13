@@ -89,11 +89,11 @@ def perlargs(*args):
         for i, t in vec.items():
             result += sep + str(i) + ' => '
             if isinstance(t, list):
-                result += '[' + perl_vector(i) + ']'
+                result += '[' + perl_vector(t) + ']'
             elif isinstance(t, dict):
-                result += '{' + perl_dict(i) + '}'
+                result += '{' + perl_dict(t) + '}'
             else:
-                result += perl_elem(i)
+                result += perl_elem(t)
             sep = ', '
 
         return result
