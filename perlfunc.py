@@ -201,7 +201,10 @@ def perlreq(*modules):
         new.__doc__ = fn.__doc__ if fn.__doc__ is not None else ''
 
         for i in modules:
-            new.__doc__ = 'require(\'%s\');\n' % i + new.__doc__
+            if i.endswith(".pm"):
+                new.__doc__ = 'use %s;\n' % i[:-3] + new.__doc__
+            else:
+                new.__doc__ = 'require(\'%s\');\n' % i + new.__doc__
         return new
 
     return require_inc
@@ -227,3 +230,4 @@ def perl5lib(*paths):
         return new
 
     return include_fun    
+
